@@ -44,12 +44,8 @@ pub fn spawn_consumers(
             // workload CERTIFICATE is the identity — no DCR, no token;
             // the mint retries while the fleet boots.
             let bus = loop {
-                match sentin8::bus::client::BusClient::for_workload(
-                    &bus_url,
-                    &auth_issuer,
-                    &group,
-                )
-                .await
+                match sentin8::bus::client::BusClient::for_workload(&bus_url, &auth_issuer, &group)
+                    .await
                 {
                     Ok(c) => break c,
                     Err(e) => {
