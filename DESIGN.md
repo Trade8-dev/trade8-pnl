@@ -92,7 +92,7 @@ sequenceDiagram
         H->>E: summary(claims.sub) / positions_for(claims.sub)
         E-->>H: live engine snapshot
     else env tier (board / session-close)
-        H->>DB: set context; begin(); read_trader_board (explicit env filter)
+        H->>DB: set context, begin(), read_trader_board (explicit env filter)
         H-->>U: rows
     end
 ```
