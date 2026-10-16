@@ -2,7 +2,11 @@
   "vertical": "trade8",
   "services": [
     {
-      "service_type": "trade8:pnl"
+      "service_type": "trade8:pnl",
+      "telemetry_property": {
+        "slug": "pnl",
+        "name": "Trade8:PNL Telemetry"
+      }
     }
   ]
 }
