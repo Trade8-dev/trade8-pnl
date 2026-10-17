@@ -1,4 +1,4 @@
-# BUSINESS.md: Trade8:Pnl — Business Requirements & Functionality
+# Trade8:Pnl — Business Requirements & Functionality
 
 > Audience: product owners, business analysts, and anyone evaluating what
 > Trade8:Pnl **does for the business**. For architecture read `README.md`;
