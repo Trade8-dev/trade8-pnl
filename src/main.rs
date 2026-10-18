@@ -18,6 +18,7 @@ mod admin_ui;
 mod consumers;
 mod core;
 mod registration;
+mod openapi;
 mod store;
 
 use sqlx::Acquire;
@@ -99,8 +100,19 @@ fn extend_router(app: Router<Arc<PnlState>>, _state: Arc<PnlState>) -> Router<Ar
             get(|| async { Json(serde_json::json!({"status": "ok", "service": "trade8:pnl", "version": sentin8::build_info::id(), "build": sentin8::build_info::build_hash()})) }),
         )
 }
+#[utoipa::path(
+    get,
+    path = "/v1/pnl/summary",
+    responses(
+        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 401, description = "Not authenticated"),
+        (status = 403, description = "Forbidden"),
+    ),
+    security(),
+    tag = "pnl",
+)]
 
-async fn self_summary(
+pub(crate) async fn self_summary(
     State(st): State<Arc<PnlState>>,
     headers: axum::http::HeaderMap,
 ) -> Result<Json<trade8::contracts::TraderPnlSummary>, (axum::http::StatusCode, String)> {
@@ -114,8 +126,19 @@ async fn self_summary(
     .await?;
     Ok(Json(st.engine.summary(&auth.claims.sub)))
 }
+#[utoipa::path(
+    get,
+    path = "/v1/pnl/positions",
+    responses(
+        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 401, description = "Not authenticated"),
+        (status = 403, description = "Forbidden"),
+    ),
+    security(),
+    tag = "pnl",
+)]
 
-async fn self_positions(
+pub(crate) async fn self_positions(
     State(st): State<Arc<PnlState>>,
     headers: axum::http::HeaderMap,
 ) -> Result<Json<Vec<trade8::contracts::Position>>, (axum::http::StatusCode, String)> {
@@ -129,8 +152,18 @@ async fn self_positions(
     .await?;
     Ok(Json(st.engine.positions_for(&auth.claims.sub)))
 }
-
-async fn office_summary(
+#[utoipa::path(
+    get,
+    path = "/v1/pnl/office",
+    responses(
+        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 401, description = "Not authenticated"),
+        (status = 403, description = "Forbidden"),
+    ),
+    security(),
+    tag = "pnl",
+)]
+pub(crate) async fn office_summary(
     State(st): State<Arc<PnlState>>,
     headers: axum::http::HeaderMap,
     Query(q): Query<std::collections::HashMap<String, String>>,
@@ -149,10 +182,21 @@ async fn office_summary(
         .unwrap_or_else(|| "DEFAULT".into());
     Ok(Json(st.engine.office_summary(&office)))
 }
+#[utoipa::path(
+    get,
+    path = "/v1/pnl/traders",
+    responses(
+        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 401, description = "Not authenticated"),
+        (status = 403, description = "Forbidden"),
+    ),
+    security(),
+    tag = "pnl",
+)]
 
 /// The desk board (manager scope): today's trader summary rows from the
 /// DB (source of truth — the persist pass).
-async fn trader_board(
+pub(crate) async fn trader_board(
     State(st): State<Arc<PnlState>>,
     headers: axum::http::HeaderMap,
 ) -> Result<Json<serde_json::Value>, (axum::http::StatusCode, String)> {
@@ -198,7 +242,18 @@ async fn trader_board(
 
 /// Session close (the Cron proxy-back target): persist all
 /// positions/resumes/summaries + tomorrow's opening balances.
-async fn session_close(
+#[utoipa::path(
+    post,
+    path = "/v1/pnl/session-close",
+    responses(
+        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 401, description = "Not authenticated"),
+        (status = 403, description = "Forbidden"),
+    ),
+    security(),
+    tag = "pnl",
+)]
+pub(crate) async fn session_close(
     State(st): State<Arc<PnlState>>,
     headers: axum::http::HeaderMap,
 ) -> Result<Json<serde_json::Value>, (axum::http::StatusCode, String)> {

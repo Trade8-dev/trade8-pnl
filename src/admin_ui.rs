@@ -57,6 +57,17 @@ fn card(title: &str, body: &str) -> RemoteWidget {
         actions: vec![],
     })
 }
+#[utoipa::path(
+    get,
+    path = "/v1/admin/ui/{page}",
+    responses(
+        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 401, description = "Not authenticated"),
+        (status = 403, description = "Forbidden"),
+    ),
+    security(),
+    tag = "trade8-admin",
+)]
 
 /// `GET /v1/admin/ui/{page}` — RFW definitions.
 pub async fn get_admin_ui(
@@ -114,6 +125,17 @@ pub async fn get_admin_ui(
 }
 
 type Qp = std::collections::HashMap<String, String>;
+#[utoipa::path(
+    get,
+    path = "/v1/admin/traders",
+    responses(
+        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 401, description = "Not authenticated"),
+        (status = 403, description = "Forbidden"),
+    ),
+    security(),
+    tag = "trade8-admin",
+)]
 
 /// `GET /v1/admin/traders` — today's trader board (DB rows).
 pub async fn admin_traders(
@@ -152,6 +174,17 @@ pub async fn admin_traders(
         )
         .collect::<Vec<_>>())))
 }
+#[utoipa::path(
+    get,
+    path = "/v1/admin/overnight",
+    responses(
+        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 401, description = "Not authenticated"),
+        (status = 403, description = "Forbidden"),
+    ),
+    security(),
+    tag = "trade8-admin",
+)]
 
 /// `GET /v1/admin/overnight` — the reconcile queue feed. Mismatches are
 /// transient (outbox events feed the ops queue); the wall shows the
