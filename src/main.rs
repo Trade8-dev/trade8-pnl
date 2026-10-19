@@ -100,11 +100,61 @@ fn extend_router(app: Router<Arc<PnlState>>, _state: Arc<PnlState>) -> Router<Ar
             get(|| async { Json(serde_json::json!({"status": "ok", "service": "trade8:pnl", "version": sentin8::build_info::id(), "build": sentin8::build_info::build_hash()})) }),
         )
 }
+// ── Typed response DTOs (OAPEC-9) ──────────────────────────────────────
+
+/// Liveness/build identity (OAPEC-9 typed body).
+#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
+pub struct HealthInfo {
+    /// Always `ok` while serving.
+    pub status: String,
+    /// The service identifier.
+    pub service: String,
+    /// The build version.
+    pub version: String,
+    /// The build hash.
+    pub build: String,
+}
+
+/// Desk board row.
+#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
+pub struct TraderBoardRow {
+    /// The trader principal.
+    pub usr_id: String,
+    /// The office.
+    pub office_id: String,
+    /// Realized net.
+    pub total_net: i64,
+    /// Realized gross.
+    pub total_gross: i64,
+    /// Total fees.
+    pub total_fees: i64,
+    /// Unrealized.
+    pub unrealized: i64,
+}
+
+/// Desk board envelope.
+#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
+pub struct TraderBoardResponse {
+    /// Today's board rows.
+    pub traders: Vec<TraderBoardRow>,
+}
+
+/// Session-close acknowledgement.
+#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
+pub struct SessionCloseAck {
+    /// Traders closed.
+    pub traders: usize,
+    /// Position rows persisted.
+    pub positions_persisted: usize,
+    /// Opening balances written for tomorrow.
+    pub opening_balances: usize,
+}
+
 #[utoipa::path(
     get,
     path = "/v1/pnl/summary",
     responses(
-        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 200, description = "OK", body = trade8::contracts::TraderPnlSummary),
         (status = 401, description = "Not authenticated"),
         (status = 403, description = "Forbidden"),
     ),
@@ -130,7 +180,7 @@ pub(crate) async fn self_summary(
     get,
     path = "/v1/pnl/positions",
     responses(
-        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 200, description = "OK", body = Vec<trade8::contracts::Position>),
         (status = 401, description = "Not authenticated"),
         (status = 403, description = "Forbidden"),
     ),
@@ -156,7 +206,7 @@ pub(crate) async fn self_positions(
     get,
     path = "/v1/pnl/office",
     responses(
-        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 200, description = "OK", body = trade8::contracts::OfficePnlSummary),
         (status = 401, description = "Not authenticated"),
         (status = 403, description = "Forbidden"),
     ),
@@ -186,7 +236,7 @@ pub(crate) async fn office_summary(
     get,
     path = "/v1/pnl/traders",
     responses(
-        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 200, description = "OK", body = TraderBoardResponse),
         (status = 401, description = "Not authenticated"),
         (status = 403, description = "Forbidden"),
     ),
@@ -199,7 +249,7 @@ pub(crate) async fn office_summary(
 pub(crate) async fn trader_board(
     State(st): State<Arc<PnlState>>,
     headers: axum::http::HeaderMap,
-) -> Result<Json<serde_json::Value>, (axum::http::StatusCode, String)> {
+) -> Result<Json<TraderBoardResponse>, (axum::http::StatusCode, String)> {
     let a = sentin8::shell::verify_token(&st.core.config, &headers).await?;
     sentin8::shell::policy::require(
         &st.core.admin.policy,
@@ -229,15 +279,19 @@ pub(crate) async fn trader_board(
         .await
         .map_err(sentin8::shell::err_db)?;
     tx.commit().await.ok(); // dropping an uncommitted tx rolls back
-    Ok(Json(serde_json::json!({"traders": rows.into_iter().map(
-        |(usr_id, office_id, total_net, total_gross, total_fees, unrealized)| {
-            serde_json::json!({
-                "usr_id": usr_id, "office_id": office_id,
-                "total_net": total_net, "total_gross": total_gross,
-                "total_fees": total_fees, "unrealized": unrealized,
+    Ok(Json(TraderBoardResponse {
+        traders: rows
+            .into_iter()
+            .map(|(usr_id, office_id, total_net, total_gross, total_fees, unrealized)| TraderBoardRow {
+                usr_id,
+                office_id,
+                total_net,
+                total_gross,
+                total_fees,
+                unrealized,
             })
-        }
-    ).collect::<Vec<_>>()})))
+            .collect(),
+    }))
 }
 
 /// Session close (the Cron proxy-back target): persist all
@@ -246,7 +300,7 @@ pub(crate) async fn trader_board(
     post,
     path = "/v1/pnl/session-close",
     responses(
-        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 200, description = "OK", body = SessionCloseAck),
         (status = 401, description = "Not authenticated"),
         (status = 403, description = "Forbidden"),
     ),
@@ -256,7 +310,7 @@ pub(crate) async fn trader_board(
 pub(crate) async fn session_close(
     State(st): State<Arc<PnlState>>,
     headers: axum::http::HeaderMap,
-) -> Result<Json<serde_json::Value>, (axum::http::StatusCode, String)> {
+) -> Result<Json<SessionCloseAck>, (axum::http::StatusCode, String)> {
     let a = sentin8::shell::verify_token(&st.core.config, &headers).await?;
     sentin8::shell::policy::require(
         &st.core.admin.policy,
@@ -324,11 +378,11 @@ pub(crate) async fn session_close(
         balances,
         "session close persisted"
     );
-    Ok(Json(serde_json::json!({
-        "traders": traders.len(),
-        "positions_persisted": positions_persisted,
-        "opening_balances": balances,
-    })))
+    Ok(Json(SessionCloseAck {
+        traders: traders.len(),
+        positions_persisted,
+        opening_balances: balances,
+    }))
 }
 
 /// The fill consumer: Desk/Router fill events drive the engine;

@@ -61,7 +61,7 @@ fn card(title: &str, body: &str) -> RemoteWidget {
     get,
     path = "/v1/admin/ui/{page}",
     responses(
-        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 200, description = "OK", body = sentin8::rfw::AdminUiResponse),
         (status = 401, description = "Not authenticated"),
         (status = 403, description = "Forbidden"),
     ),
@@ -74,7 +74,7 @@ pub async fn get_admin_ui(
     State(_st): State<std::sync::Arc<PnlState>>,
     headers: HeaderMap,
     Path(page): Path<String>,
-) -> Result<Json<serde_json::Value>, (axum::http::StatusCode, String)> {
+) -> Result<Json<AdminUiResponse>, (axum::http::StatusCode, String)> {
     let _a = sentin8::shell::verify_token(&_st.core.config, &headers).await?;
     sentin8::shell::policy::require(
         &_st.core.admin.policy,
@@ -119,9 +119,7 @@ pub async fn get_admin_ui(
             ))
         }
     };
-    Ok(Json(
-        serde_json::to_value(AdminUiResponse::page(def)).unwrap_or_default(),
-    ))
+    Ok(Json(AdminUiResponse::page(def)))
 }
 
 type Qp = std::collections::HashMap<String, String>;
@@ -129,7 +127,7 @@ type Qp = std::collections::HashMap<String, String>;
     get,
     path = "/v1/admin/traders",
     responses(
-        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 200, description = "Admin rows", body = Vec<serde_json::Value>),
         (status = 401, description = "Not authenticated"),
         (status = 403, description = "Forbidden"),
     ),
@@ -141,7 +139,7 @@ type Qp = std::collections::HashMap<String, String>;
 pub async fn admin_traders(
     State(st): State<std::sync::Arc<PnlState>>,
     headers: HeaderMap,
-) -> Result<Json<serde_json::Value>, (axum::http::StatusCode, String)> {
+) -> Result<Json<Vec<serde_json::Value>>, (axum::http::StatusCode, String)> {
     let a = sentin8::shell::verify_token(&st.core.config, &headers).await?;
     sentin8::shell::policy::require(
         &st.core.admin.policy,
@@ -161,7 +159,7 @@ pub async fn admin_traders(
     let rows = crate::store::read_trader_board(&mut conn, env, 100)
         .await
         .map_err(sentin8::shell::err_db)?;
-    Ok(Json(serde_json::json!(rows
+    Ok(Json(rows
         .into_iter()
         .map(
             |(usr_id, office_id, total_net, total_gross, total_fees, unrealized)| {
@@ -172,13 +170,13 @@ pub async fn admin_traders(
                 })
             }
         )
-        .collect::<Vec<_>>())))
+        .collect::<Vec<_>>()))
 }
 #[utoipa::path(
     get,
     path = "/v1/admin/overnight",
     responses(
-        (status = 200, description = "OK", body = serde_json::Value),
+        (status = 200, description = "Admin rows", body = Vec<serde_json::Value>),
         (status = 401, description = "Not authenticated"),
         (status = 403, description = "Forbidden"),
     ),
@@ -193,7 +191,7 @@ pub async fn admin_overnight(
     State(st): State<std::sync::Arc<PnlState>>,
     headers: HeaderMap,
     Query(q): Query<Qp>,
-) -> Result<Json<serde_json::Value>, (axum::http::StatusCode, String)> {
+) -> Result<Json<Vec<serde_json::Value>>, (axum::http::StatusCode, String)> {
     let a = sentin8::shell::verify_token(&st.core.config, &headers).await?;
     sentin8::shell::policy::require(
         &st.core.admin.policy,
@@ -230,7 +228,7 @@ pub async fn admin_overnight(
     .fetch_all(&mut *conn)
     .await
     .map_err(sentin8::shell::err_db)?;
-    Ok(Json(serde_json::json!(rows
+    Ok(Json(rows
         .into_iter()
         .map(|(usr_id, symbol_id, expected, actual)| {
             serde_json::json!({
@@ -239,5 +237,5 @@ pub async fn admin_overnight(
                 "mismatch": expected != actual,
             })
         })
-        .collect::<Vec<_>>())))
+        .collect::<Vec<_>>()))
 }
