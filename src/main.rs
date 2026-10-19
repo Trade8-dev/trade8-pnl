@@ -3,13 +3,13 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Trade8:Pnl
 // SPDX-License-Identifier: Apache-2.0
 
-//! Trade8:Pnl service binary — day P&L engine (bus consumer).
+//! Trade8:Pnl service binary - day P&L engine (bus consumer).
 //!
 //! Design: `../pnl/DESIGN.md`.
 //! Fills/marks drive the
 //! engine; positions/resumes/summaries upsert to the DB with
 //! `position:updated`/`trader:summary`/`office:summary` outbox events;
-//! session-close writes tomorrow's opening balances — everything
+//! session-close writes tomorrow's opening balances - everything
 //! derives from fill events + opening balances (no dual-write).
 
 #![allow(dead_code)]
@@ -96,7 +96,7 @@ fn extend_router(app: Router<Arc<PnlState>>, _state: Arc<PnlState>) -> Router<Ar
             "/v1/health",
             // Carries the binary's build identity (`version`/`build`,
             // BUILDID-1) so captain's monitor populates `make status`'s
-            // VERSION column — the consuming BINARY's identity.
+            // VERSION column - the consuming BINARY's identity.
             get(|| async { Json(serde_json::json!({"status": "ok", "service": "trade8:pnl", "version": sentin8::build_info::id(), "build": sentin8::build_info::build_hash()})) }),
         )
 }
@@ -195,7 +195,7 @@ pub(crate) async fn office_summary(
 )]
 
 /// The desk board (manager scope): today's trader summary rows from the
-/// DB (source of truth — the persist pass).
+/// DB (source of truth - the persist pass).
 pub(crate) async fn trader_board(
     State(st): State<Arc<PnlState>>,
     headers: axum::http::HeaderMap,
@@ -216,7 +216,7 @@ pub(crate) async fn trader_board(
         .await
         .map_err(sentin8::shell::err_db)?;
     sentin8::shell::set_tenant_context(&mut conn, env).await;
-    // RLS context is transaction-local (DESIGN.md §5) —
+    // RLS context is transaction-local (DESIGN.md §5) -
     // begin() pins the tenant context to the SAME tx as the DML/reads.
     let mut tx = match conn.begin().await {
         Ok(t) => t,
@@ -273,7 +273,7 @@ pub(crate) async fn session_close(
         .await
         .map_err(sentin8::shell::err_db)?;
     sentin8::shell::set_tenant_context(&mut conn, env).await;
-    // RLS context is transaction-local (DESIGN.md §5) —
+    // RLS context is transaction-local (DESIGN.md §5) -
     // begin() pins the tenant context to the SAME tx as the DML/reads.
     let mut tx = match conn.begin().await {
         Ok(t) => t,
@@ -367,10 +367,10 @@ async fn main() -> anyhow::Result<()> {
                     if let Ok(env_id) = uuid::Uuid::parse_str(&env_slug) {
                         if let Ok(mut conn) = state.core.pool.acquire().await {
                             sentin8::shell::set_tenant_context(&mut conn, env_id).await;
-                            // RLS context is transaction-local (DESIGN.md §5) —
+                            // RLS context is transaction-local (DESIGN.md §5) -
                             // begin() pins the tenant context to the SAME tx as the DML/reads.
                             let Ok(mut tx) = conn.begin().await else {
-                                tracing::warn!("pnl: boot tx begin failed — carry-in skipped");
+                                tracing::warn!("pnl: boot tx begin failed - carry-in skipped");
                                 return Ok::<_, anyhow::Error>(state.clone());
                             };
                             match store::load_opening_balances(&mut tx, env_id).await {
@@ -418,7 +418,7 @@ impl sentin8::shield::admin::HasPolicyAdmin for PnlState {
 }
 
 #[cfg(test)]
-// Latency harness — fill→summary budget (1k fills < 10s CI headroom;
+// Latency harness - fill→summary budget (1k fills < 10s CI headroom;
 // the design budget number is measured release-mode).
 mod latency {
     use super::*;

@@ -109,7 +109,7 @@
         "tags": [
           "trade8-admin"
         ],
-        "summary": "`GET /v1/admin/overnight` — the reconcile queue feed. Mismatches are\ntransient (outbox events feed the ops queue); the wall shows the\nopening-balance table for today with position-snapshot deltas.",
+        "summary": "`GET /v1/admin/overnight` - the reconcile queue feed. Mismatches are\ntransient (outbox events feed the ops queue); the wall shows the\nopening-balance table for today with position-snapshot deltas.",
         "operationId": "admin_overnight",
         "responses": {
           "200": {
@@ -561,7 +561,7 @@
         "tags": [
           "trade8-admin"
         ],
-        "summary": "`GET /v1/admin/traders` — today's trader board (DB rows).",
+        "summary": "`GET /v1/admin/traders` - today's trader board (DB rows).",
         "operationId": "admin_traders",
         "responses": {
           "200": {
@@ -587,7 +587,7 @@
         "tags": [
           "trade8-admin"
         ],
-        "summary": "`GET /v1/admin/ui/{page}` — RFW definitions.",
+        "summary": "`GET /v1/admin/ui/{page}` - RFW definitions.",
         "operationId": "get_admin_ui",
         "responses": {
           "200": {
@@ -734,7 +734,7 @@
         "tags": [
           "pnl"
         ],
-        "summary": "The desk board (manager scope): today's trader summary rows from the\nDB (source of truth — the persist pass).",
+        "summary": "The desk board (manager scope): today's trader summary rows from the\nDB (source of truth - the persist pass).",
         "operationId": "trader_board",
         "responses": {
           "200": {
@@ -761,7 +761,7 @@
   "tags": [
     {
       "name": "pnl",
-      "description": "Trade8:PnL — profit & loss"
+      "description": "Trade8:PnL - profit & loss"
     },
     {
       "name": "trade8-admin",

@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Trade8:Pnl
 // SPDX-License-Identifier: Apache-2.0
 
-//! Pnl DB persistence — position/resume/summary upserts,
+//! Pnl DB persistence - position/resume/summary upserts,
 //! opening-balance carry, and `position:updated` / `trader:summary` /
 //! `office:summary` / `overnight:mismatch` outbox events.
 
@@ -291,7 +291,7 @@ pub async fn read_trader_board(
     Ok(rows)
 }
 
-/// Overnight mismatch event — the reconcile queue's input.
+/// Overnight mismatch event - the reconcile queue's input.
 pub async fn persist_overnight_mismatch(
     conn: &mut PgConnection,
     env_id: Uuid,
@@ -328,7 +328,7 @@ pub async fn load_currency_rates(
     Ok(rows.into_iter().map(|(c, r)| (c, r as i128)).collect())
 }
 
-/// Outbox insert — drained by the shell's boot-step-8b relay to Bus.
+/// Outbox insert - drained by the shell's boot-step-8b relay to Bus.
 async fn insert_outbox_event(
     conn: &mut PgConnection,
     env_id: Uuid,

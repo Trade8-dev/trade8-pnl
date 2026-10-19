@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Trade8:Pnl
 // SPDX-License-Identifier: Apache-2.0
 
-//! Trade8:Pnl admin UI — RFW pages + data endpoints.
+//! Trade8:Pnl admin UI - RFW pages + data endpoints.
 
 use axum::extract::{Path, Query, State};
 use axum::http::HeaderMap;
@@ -69,7 +69,7 @@ fn card(title: &str, body: &str) -> RemoteWidget {
     tag = "trade8-admin",
 )]
 
-/// `GET /v1/admin/ui/{page}` — RFW definitions.
+/// `GET /v1/admin/ui/{page}` - RFW definitions.
 pub async fn get_admin_ui(
     State(_st): State<std::sync::Arc<PnlState>>,
     headers: HeaderMap,
@@ -137,7 +137,7 @@ type Qp = std::collections::HashMap<String, String>;
     tag = "trade8-admin",
 )]
 
-/// `GET /v1/admin/traders` — today's trader board (DB rows).
+/// `GET /v1/admin/traders` - today's trader board (DB rows).
 pub async fn admin_traders(
     State(st): State<std::sync::Arc<PnlState>>,
     headers: HeaderMap,
@@ -186,7 +186,7 @@ pub async fn admin_traders(
     tag = "trade8-admin",
 )]
 
-/// `GET /v1/admin/overnight` — the reconcile queue feed. Mismatches are
+/// `GET /v1/admin/overnight` - the reconcile queue feed. Mismatches are
 /// transient (outbox events feed the ops queue); the wall shows the
 /// opening-balance table for today with position-snapshot deltas.
 pub async fn admin_overnight(

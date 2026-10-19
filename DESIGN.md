@@ -1,4 +1,4 @@
-# Trade8:Pnl — Detailed Design Document
+# Trade8:Pnl - Detailed Design Document
 
 > Audience: maintainers, reviewers, and architects modifying the service.
 > Overview in `README.md`; business functionality in `BUSINESS.md`.
@@ -75,7 +75,7 @@ graph TD
     end
 ```
 
-### Request lifecycle — read family (self / office / env tiers)
+### Request lifecycle - read family (self / office / env tiers)
 
 ```mermaid
 sequenceDiagram
@@ -97,7 +97,7 @@ sequenceDiagram
     end
 ```
 
-### Consumer lifecycle — fill → position → summary → persist
+### Consumer lifecycle - fill → position → summary → persist
 
 ```mermaid
 sequenceDiagram
@@ -187,10 +187,10 @@ erDiagram
     opening_balance }o--o{ position_snapshot : "carried into"
 ```
 
-- `opening_balance` — written at session close for **tomorrow**; loaded at
+- `opening_balance` - written at session close for **tomorrow**; loaded at
   boot (carry-in) by office membership.
 - `position_snapshot` / `symbol_resume` / `trader_summary` /
-  `office_summary` — live + day tables; idempotent upserts keyed by
+  `office_summary` - live + day tables; idempotent upserts keyed by
   (env, trader, symbol, date).
 - RLS tiers: reads are additionally scope-filtered by handler tier
   (self = `usr_id = token.sub`; office = member office; env = manager).
@@ -236,17 +236,17 @@ mismatch path lands in `pnl.outbox` exactly like the summary events.)
 
 ## 5. Cross-Cutting Concerns
 
-- **AuthN/AuthZ** — 8-step pipeline; Shield targets `trade8:pnl:self/office/env:read`;
+- **AuthN/AuthZ** - 8-step pipeline; Shield targets `trade8:pnl:self/office/env:read`;
   the self tier additionally binds rows to `token.sub` in SQL.
-- **Tenant + RLS** — `set_tenant_context` + `begin()`; explicit env filters;
+- **Tenant + RLS** - `set_tenant_context` + `begin()`; explicit env filters;
   role `trade8_pnl_service` (no BYPASSRLS); declared `desk.currency` read only.
-- **Idempotency** — engine dedupe set on fill `transaction_id`; DB upserts
+- **Idempotency** - engine dedupe set on fill `transaction_id`; DB upserts
   keyed by (env, trader, symbol/office, trading_date); outbox rows carry
   idempotency keys = row ids.
-- **Audit journaling** — same-tx audit rows; Sys ingest with retry.
-- **Fail-safety** — engine restarts rebuild from opening balances + new bus
-  events (intrasession loss tolerated only for the replay gap — see §6).
-- **TLS/M2M** — cert-bound consumers (`trade8:pnl` workloads), post-quantum TLS.
+- **Audit journaling** - same-tx audit rows; Sys ingest with retry.
+- **Fail-safety** - engine restarts rebuild from opening balances + new bus
+  events (intrasession loss tolerated only for the replay gap - see §6).
+- **TLS/M2M** - cert-bound consumers (`trade8:pnl` workloads), post-quantum TLS.
 
 ## 6. Failure Modes & Recovery
 
@@ -290,23 +290,23 @@ graph LR
 ```
 
 - Fine-grained `RwLock` maps (books/marks/summaries/office_of/trading_date/
-  applied tx set) — no cross-blocking between read APIs and consumers.
+  applied tx set) - no cross-blocking between read APIs and consumers.
 - Fill application is O(books of that trader); summary fold is O(the
-  trader's books) per event — bounded by active symbols per trader.
+  trader's books) per event - bounded by active symbols per trader.
 - Marks fan into each affected book + that trader's summary recompute.
 - Latency harness in `main.rs` covers fill→summary budget (1k fills within
   CI headroom; the design budget is release-mode-measured).
 
 ## 8. Invariants, Insecure-Defaults Rejected, Unsafe Rationale
 
-1. Positions/summaries are pure functions of (fills + opening balances) —
+1. Positions/summaries are pure functions of (fills + opening balances) -
    no other input can mutate them.
 2. No dual-write: Pnl never writes order/fill state; Router is the sole
    fill writer.
 3. Fill application is exactly-once per transaction id per process; DB
    writes are idempotent per (env, trader, symbol, date).
 4. The engine's fee total is the ×10⁴-converted sum of per-fee amounts at
-   the persisted rate table — unknown currencies default to 1.0 and are
+   the persisted rate table - unknown currencies default to 1.0 and are
    visible in the audit trail.
 5. LFT/max-net are monotonic within a trading day; trading_date rollover
    resets are explicit (session close).
@@ -331,14 +331,14 @@ graph TD
 
 ## 10. Open Questions
 
-- **Intrasession replay gap** — after a mid-day crash, events emitted while
+- **Intrasession replay gap** - after a mid-day crash, events emitted while
   the consumer was down are recovered by bus redelivery only within
   retention; a journal-first replay design (Storage cold tier) is a
   platform option.
-- **Quote-based mark classes** — per-class mark-source configuration.
-- **Ops reconciliation tooling** — adjust/replay actions behind the
+- **Quote-based mark classes** - per-class mark-source configuration.
+- **Ops reconciliation tooling** - adjust/replay actions behind the
   overnight mismatch queue (read-only today).
-- **Office membership resolution** — fill consumers currently default the
+- **Office membership resolution** - fill consumers currently default the
   office to "HO" when the payload omits it; a trader-profile resolution
   pass would remove the default.
 

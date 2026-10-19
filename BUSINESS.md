@@ -1,4 +1,4 @@
-# Trade8:Pnl — Business Requirements & Functionality
+# Trade8:Pnl - Business Requirements & Functionality
 
 > Audience: product owners, business analysts, and anyone evaluating what
 > Trade8:Pnl **does for the business**. For architecture read `README.md`;
@@ -9,7 +9,7 @@
 - Tell every trader **what they made, right now**: per-symbol and total day
   P&L (realized, unrealized, fees, net) that ticks with every fill and mark.
 - Give managers the **office and desk-wide picture** with the same numbers
-  the traders see — one source of truth, no shadow spreadsheets.
+  the traders see - one source of truth, no shadow spreadsheets.
 - Provide supervisory systems (Risk) a **trustworthy day summary** to drive
   loss ladders automatically.
 - Guarantee **reconstructable money**: today's numbers replay from fills +
@@ -52,7 +52,7 @@
 | Realized | Close/reduce realization | Realized = (fill vs cost) × closed shares, signed by position side; at reversal the closing portion realizes first |
 | Unrealized | Live marks | Last print marks every affected trader's book instantly |
 | Fees | Multi-currency accumulation | Each reported fee converts at its currency rate; totals are ×10⁴-accurate |
-| LFT | Peak-to-now giveback | Max net profit and the drawdown from it, updated on every fill/mark — the trader's "give it back" meter |
+| LFT | Peak-to-now giveback | Max net profit and the drawdown from it, updated on every fill/mark - the trader's "give it back" meter |
 | Summaries | Real-time day board | Trader and office summaries recomputed on every fill and mark |
 | Overnight | Continuity | Tomorrow opens exactly with today's closes; restored parked orders reconcile to the penny or raise a mismatch |
 | Replay | Reconstructability | Any day's P&L recomputes from fills + opening balances byte-identically |
@@ -72,7 +72,7 @@ desk session-close (carry + persist), desk overnight-restored
 
 ## 5. Business Rules & Invariants
 
-1. P&L derives only from fills and opening balances — nothing can "adjust"
+1. P&L derives only from fills and opening balances - nothing can "adjust"
    positions outside the event flow without leaving a mismatch trail.
 2. A fill is applied exactly once regardless of redelivery.
 3. Fees convert at the persisted currency rate; unknown rates default to

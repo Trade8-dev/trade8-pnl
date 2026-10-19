@@ -211,7 +211,7 @@ async fn persist_position_roundtrip_upsert() {
 
 /// The opening-balance carry contract: rows are written for
 /// tomorrow's date; the row shape + conflict behavior are asserted via a
-/// direct read (the loader reads today's bucket only — the true
+/// direct read (the loader reads today's bucket only - the true
 /// park→load cycle is covered by the desk overnight test + e2e).
 #[tokio::test]
 async fn opening_balance_carry_contract() {
@@ -279,7 +279,7 @@ async fn trader_board_reads_today_rows() {
         return;
     };
     use trade8::contracts::{OfficePnlSummary, TraderPnlSummary};
-    // CURRENT_DATE, not a fixed literal — read_trader_board filters
+    // CURRENT_DATE, not a fixed literal - read_trader_board filters
     // `trading_date = CURRENT_DATE`, so a hardcoded date drifts after that
     // day (a fixed test date).
     let today = chrono::Utc::now().date_naive().to_string();
@@ -367,7 +367,7 @@ async fn currency_rates_scale() {
     cleanup(&mut conn, env_a(), "u-sql").await;
 }
 
-/// The engine-level parity between a live engine and a stored position —
+/// The engine-level parity between a live engine and a stored position -
 /// the store round-trips the engine's Position struct faithfully.
 #[tokio::test]
 async fn engine_position_matches_store_shape() {

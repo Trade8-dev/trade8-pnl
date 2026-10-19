@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Trade8:Pnl
 // SPDX-License-Identifier: Apache-2.0
 
-//! Pnl engine — per-(trader, symbol) position state
+//! Pnl engine - per-(trader, symbol) position state
 //! machines, realized/unrealized, fees, LFT, summaries, overnight carry.
 //!
 //! Design: `../pnl/DESIGN.md` §4.
@@ -11,7 +11,7 @@
 //!
 //! **Scale semantics**: price fields are instrument-scale ticks;
 //! realized/unrealized/fees are money ×10⁴. A fill's realized P&L at
-//! equity scale is `(sell_px − cost_px) × shares` in ×10⁴ ticks — the
+//! equity scale is `(sell_px − cost_px) × shares` in ×10⁴ ticks - the
 //! tests pin the magnitudes (memory: ×10⁴ price-scale bugs are the
 //! classic failure class).
 
@@ -38,12 +38,12 @@ pub struct PositionBook {
     /// Realized day P&L (×10⁴ money).
     pub realized: i128,
     pub fees: i128,
-    /// Last mark (price ticks) — last print or quote.
+    /// Last mark (price ticks) - last print or quote.
     pub last_mark_raw: Option<i128>,
-    /// Per-symbol net high-water (max net seen —
+    /// Per-symbol net high-water (max net seen -
     /// parity).
     pub max_net: i128,
-    /// Per-symbol LFT low-water (max drawdown from the high-water —
+    /// Per-symbol LFT low-water (max drawdown from the high-water -
     /// parity).
     pub lft: i128,
 }
@@ -56,7 +56,7 @@ impl PositionBook {
         }
     }
 
-    /// Apply one fill — position/reversal semantics per the
+    /// Apply one fill - position/reversal semantics per the
     /// `PositionContext` (`m_fillChangesPosSide`): same-side adds
     /// average in; opposite side closes (and may reverse).
     pub fn apply_fill(&mut self, qty: u64, side_char: char, price_raw: i128, fee_total: i128) {
@@ -127,7 +127,7 @@ impl PnlEngine {
             .insert(usr_id.to_string(), office_id.to_string());
     }
 
-    /// Register a mark (print or quote) — unrealized refresh input.
+    /// Register a mark (print or quote) - unrealized refresh input.
     /// Refreshes the affected books' last mark + high-water trackers AND
     /// recomputes the owning traders' summaries (a stale summary on a
     /// mark move would misreport unrealized).
@@ -156,7 +156,7 @@ impl PnlEngine {
         }
         let key = (usr_id.to_string(), fill.order_id);
         let _ = key;
-        // Look up by (usr, symbol) — fills carry order_id, the shell pass
+        // Look up by (usr, symbol) - fills carry order_id, the shell pass
         // maps order→(usr, symbol) from the Desk event; the engine API
         // takes the resolved tuple to stay pure.
         let fee_total = 0i128; // fee conversion lands with the rates pass
@@ -187,7 +187,7 @@ impl PnlEngine {
         self.recompute_summary_locked(&books, usr_id, office_id);
     }
 
-    /// Fill application with full context (the primary API — side,
+    /// Fill application with full context (the primary API - side,
     /// symbol, fees resolved by the caller from the order + charger).
     /// The argument count is the resolved fill context; grouped into a
     /// struct would push allocation onto the per-fill path.
@@ -230,7 +230,7 @@ impl PnlEngine {
     }
 
     /// Recompute the trader day summary from all their books (fold of
-    /// per-symbol resumes — parity).
+    /// per-symbol resumes - parity).
     fn recompute_summary_locked(
         &self,
         books: &HashMap<(String, Uuid), PositionBook>,
@@ -394,7 +394,7 @@ impl PnlEngine {
     }
 
     /// Update the per-symbol high-water/LFT trackers (call after every
-    /// fill apply + mark refresh — the trackers ride the book).
+    /// fill apply + mark refresh - the trackers ride the book).
     fn track_high_water(book: &mut PositionBook) {
         let net = book.realized - book.fees + book.unrealized();
         if net > book.max_net {
@@ -407,7 +407,7 @@ impl PnlEngine {
     }
 
     /// Carry in an opening balance (seed a book from a
-    /// prior-day position snapshot (size + avg cost) — the replay path.
+    /// prior-day position snapshot (size + avg cost) - the replay path.
     pub fn carry_position(
         &self,
         usr_id: &str,
@@ -445,7 +445,7 @@ impl PnlEngine {
     }
 
     /// Deduped fill application (the bus consumer path): a
-    /// transaction id may be None (direct API calls, tests) — those
+    /// transaction id may be None (direct API calls, tests) - those
     /// always apply; Some(tx) redelivery is a no-op.
     #[allow(clippy::too_many_arguments)]
     pub fn apply_fill_context_dedup(
@@ -672,7 +672,7 @@ mod tests {
         // Carry-in (the store's load_opening_balances equivalent at the
         // engine level: seed the book from the snapshot).
         day2.carry_position("r1", "HO", sym, "R", carry.signed_size, carry.avg_cost_raw);
-        // Replay the day's fills (deduped — same tx ids would converge
+        // Replay the day's fills (deduped - same tx ids would converge
         // even on redelivery).
         day2.apply_fill_context("r1", "HO", sym, "R", 'S', 100, 120_000, SCALE, 0);
         day2.mark(sym, 115_000);

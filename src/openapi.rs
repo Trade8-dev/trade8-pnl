@@ -59,7 +59,7 @@ crate::openapi::w::pnl_health,
     components(schemas()),
     security(),
     tags(
-        (name = "pnl", description = "Trade8:PnL — profit & loss"),
+        (name = "pnl", description = "Trade8:PnL - profit & loss"),
         (name = "trade8-admin", description = "Trade8 admin surface (RFW)"),
         (name = "policy", description = "Shield policy administration (shared surface)"),
     ),

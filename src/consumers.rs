@@ -41,7 +41,7 @@ pub fn spawn_consumers(
         let group = format!("trade8:pnl:{family}");
         tokio::spawn(async move {
             // Cert-presenting Bus client (CERTFREE-4V): the per-family
-            // workload CERTIFICATE is the identity — no DCR, no token;
+            // workload CERTIFICATE is the identity - no DCR, no token;
             // the mint retries while the fleet boots.
             let bus = loop {
                 match sentin8::bus::client::BusClient::for_workload(&bus_url, &auth_issuer, &group)
@@ -108,7 +108,7 @@ async fn handle_fill(
     let qty = p["qty"].as_u64().unwrap_or(0);
     let price_raw = p["price_raw"].as_i64().unwrap_or(0) as i128;
     // Fee accumulation: each fee converts at its currency's
-    // rate_to_usd (×10⁴, from trade8.currency) then sums — the engine
+    // rate_to_usd (×10⁴, from trade8.currency) then sums - the engine
     // applies the USD-scaled total to realized.
     let rates: Vec<(String, i128)> = [
         "sec_fee",
@@ -128,7 +128,7 @@ async fn handle_fill(
     let fee_total: i128 = match pool.acquire().await {
         Ok(mut conn) => {
             sentin8::shell::set_tenant_context(&mut conn, env_id).await;
-            // RLS context is transaction-local (DESIGN.md §5) —
+            // RLS context is transaction-local (DESIGN.md §5) -
             // begin() pins the tenant context to the SAME tx as the DML/reads.
             let mut tx = match conn.begin().await {
                 Ok(t) => t,
@@ -153,7 +153,7 @@ async fn handle_fill(
                 })
                 .sum()
         }
-        Err(_) => rates.iter().map(|(_, a)| *a).sum(), // no DB — raw sum
+        Err(_) => rates.iter().map(|(_, a)| *a).sum(), // no DB - raw sum
     };
     // Idempotency: the engine's seen-set on transaction_id.
     let tx_id = p["transaction_id"]
@@ -181,7 +181,7 @@ async fn handle_fill(
         return HandleOutcome::Nack;
     };
     sentin8::shell::set_tenant_context(&mut conn, env_id).await;
-    // RLS context is transaction-local (DESIGN.md §5) —
+    // RLS context is transaction-local (DESIGN.md §5) -
     // begin() pins the tenant context to the SAME tx as the DML/reads.
     let mut tx = match conn.begin().await {
         Ok(t) => t,
@@ -236,7 +236,7 @@ async fn handle_desk(
                     return HandleOutcome::Nack;
                 };
                 sentin8::shell::set_tenant_context(&mut conn, env_id).await;
-                // RLS context is transaction-local (DESIGN.md §5) —
+                // RLS context is transaction-local (DESIGN.md §5) -
                 // begin() pins the tenant context to the SAME tx as the DML/reads.
                 let mut tx = match conn.begin().await {
                     Ok(t) => t,
@@ -296,7 +296,7 @@ async fn handle_desk(
         events::ORDER_OVERNIGHT_RESTORED => {
             // Overnight verification: the Desk restored a parked
             // order; reconcile the position book's carry for that
-            // (usr, symbol) against the parked snapshot's pnl_carry — a
+            // (usr, symbol) against the parked snapshot's pnl_carry - a
             // divergence persists an `overnight:mismatch` event for the
             // ops queue.
             let usr = msg.payload["usr_id"].as_str().unwrap_or("").to_string();
@@ -314,7 +314,7 @@ async fn handle_desk(
                         return HandleOutcome::Nack;
                     };
                     sentin8::shell::set_tenant_context(&mut conn, env_id).await;
-                    // RLS context is transaction-local (DESIGN.md §5) —
+                    // RLS context is transaction-local (DESIGN.md §5) -
                     // begin() pins the tenant context to the SAME tx as the DML/reads.
                     let mut tx = match conn.begin().await {
                         Ok(t) => t,
@@ -382,7 +382,7 @@ mod tests {
     }
 
     /// Replay convergence (engine level): the same fill
-    /// sequence applied twice converges — dedupe makes redelivery a
+    /// sequence applied twice converges - dedupe makes redelivery a
     /// no-op (golden parity precondition).
     #[tokio::test]
     async fn fill_dedupe_converges() {
@@ -390,7 +390,7 @@ mod tests {
         engine.set_trading_date("2026-09-03");
         let tx = Uuid::new_v4();
         let msg = fill_msg(tx, "t1", 'B', 100, 100_000, 231);
-        // First apply (persist fails → Nack is fine; use a scratch pool —
+        // First apply (persist fails → Nack is fine; use a scratch pool -
         // here we assert the engine side only via handle_mark-shaped
         // direct calls since no DB is available in unit tests).
         let p = &msg.payload;
