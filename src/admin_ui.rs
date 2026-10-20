@@ -159,18 +159,19 @@ pub async fn admin_traders(
     let rows = crate::store::read_trader_board(&mut conn, env, 100)
         .await
         .map_err(sentin8::shell::err_db)?;
-    Ok(Json(rows
-        .into_iter()
-        .map(
-            |(usr_id, office_id, total_net, total_gross, total_fees, unrealized)| {
-                serde_json::json!({
-                    "usr_id": usr_id, "office_id": office_id,
-                    "total_net": total_net, "total_gross": total_gross,
-                    "total_fees": total_fees, "unrealized": unrealized,
-                })
-            }
-        )
-        .collect::<Vec<_>>()))
+    Ok(Json(
+        rows.into_iter()
+            .map(
+                |(usr_id, office_id, total_net, total_gross, total_fees, unrealized)| {
+                    serde_json::json!({
+                        "usr_id": usr_id, "office_id": office_id,
+                        "total_net": total_net, "total_gross": total_gross,
+                        "total_fees": total_fees, "unrealized": unrealized,
+                    })
+                },
+            )
+            .collect::<Vec<_>>(),
+    ))
 }
 #[utoipa::path(
     get,
@@ -228,14 +229,15 @@ pub async fn admin_overnight(
     .fetch_all(&mut *conn)
     .await
     .map_err(sentin8::shell::err_db)?;
-    Ok(Json(rows
-        .into_iter()
-        .map(|(usr_id, symbol_id, expected, actual)| {
-            serde_json::json!({
-                "usr_id": usr_id, "symbol_id": symbol_id,
-                "expected": expected, "actual": actual,
-                "mismatch": expected != actual,
+    Ok(Json(
+        rows.into_iter()
+            .map(|(usr_id, symbol_id, expected, actual)| {
+                serde_json::json!({
+                    "usr_id": usr_id, "symbol_id": symbol_id,
+                    "expected": expected, "actual": actual,
+                    "mismatch": expected != actual,
+                })
             })
-        })
-        .collect::<Vec<_>>()))
+            .collect::<Vec<_>>(),
+    ))
 }

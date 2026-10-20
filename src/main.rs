@@ -17,8 +17,8 @@
 mod admin_ui;
 mod consumers;
 mod core;
-mod registration;
 mod openapi;
+mod registration;
 mod store;
 
 use sqlx::Acquire;
@@ -282,14 +282,18 @@ pub(crate) async fn trader_board(
     Ok(Json(TraderBoardResponse {
         traders: rows
             .into_iter()
-            .map(|(usr_id, office_id, total_net, total_gross, total_fees, unrealized)| TraderBoardRow {
-                usr_id,
-                office_id,
-                total_net,
-                total_gross,
-                total_fees,
-                unrealized,
-            })
+            .map(
+                |(usr_id, office_id, total_net, total_gross, total_fees, unrealized)| {
+                    TraderBoardRow {
+                        usr_id,
+                        office_id,
+                        total_net,
+                        total_gross,
+                        total_fees,
+                        unrealized,
+                    }
+                },
+            )
             .collect(),
     }))
 }
