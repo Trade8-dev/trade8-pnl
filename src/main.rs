@@ -95,14 +95,14 @@ fn extend_router(app: Router<Arc<PnlState>>, _state: Arc<PnlState>) -> Router<Ar
         .route(
             "/v1/health",
             // Carries the binary's build identity (`version`/`build`,
-            // BUILDID-1) so captain's monitor populates `make status`'s
+            //) so captain's monitor populates `make status`'s
             // VERSION column - the consuming BINARY's identity.
             get(|| async { Json(serde_json::json!({"status": "ok", "service": "trade8:pnl", "version": sentin8::build_info::id(), "build": sentin8::build_info::build_hash()})) }),
         )
 }
-// ── Typed response DTOs (OAPEC-9) ──────────────────────────────────────
+// ── Typed response DTOs ──────────────────────────────────────
 
-/// Liveness/build identity (OAPEC-9 typed body).
+/// Liveness/build identity (typed body).
 #[derive(Debug, serde::Serialize, utoipa::ToSchema)]
 pub struct HealthInfo {
     /// Always `ok` while serving.
