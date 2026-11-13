@@ -8,7 +8,6 @@
 //! Output via `--print-registration`. Scopes per master design §9; pages
 //! per pnl design §8.
 
-use utoipa::OpenApi;
 
 use sentin8::registration::{
     AdminScope, AdminUi, AdminUiPage, CrossSchemaGrant, ErrorCode, M2mGrant, PgRole, PolicySetDecl,
