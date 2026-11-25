@@ -6,7 +6,8 @@
       "telemetry_property": {
         "slug": "pnl",
         "name": "Trade8:PNL Telemetry"
-      }
+      },
+      "exposure": "internal"
     }
   ]
 }
